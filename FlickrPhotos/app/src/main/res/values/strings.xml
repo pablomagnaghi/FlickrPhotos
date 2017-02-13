@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">FlickrPhotos</string>
+    <string name="empty_photos">There aren\'t any photos</string>
+    <string name="title_activity_photo_info">PhotoInfoActivity</string>
+    <string name="error_loading_photos">There was a problem loading the photos</string>
+    <string name="dialog_action_ok">OK</string>
+    <string name="dialog_error_title">Sorry</string>
+</resources>
