@@ -1,8 +1,8 @@
 package com.flickrphotos.presenter;
 
-import com.flickrphotos.model.PhotoInfoResponse;
+import com.flickrphotos.model.CommentsResponse;
 import com.flickrphotos.restServices.FlickrService;
-import com.flickrphotos.view.PhotoInfoMvpView;
+import com.flickrphotos.view.PhotoCommentsMvpView;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -10,12 +10,12 @@ import rx.android.schedulers.AndroidSchedulers;
 import rx.schedulers.Schedulers;
 
 /**
- * Created by Pablo on 12/2/2017.
+ * Created by Pablo on 16/2/2017.
  */
-public class PhotoInfoPresenter extends BasePresenter<PhotoInfoMvpView> {
+public class PhotoCommentsPresenter extends BasePresenter<PhotoCommentsMvpView> {
 
     @Override
-    public void attachView(PhotoInfoMvpView mvpView) {
+    public void attachView(PhotoCommentsMvpView mvpView) {
         super.attachView(mvpView);
     }
 
@@ -24,15 +24,15 @@ public class PhotoInfoPresenter extends BasePresenter<PhotoInfoMvpView> {
         super.detachView();
     }
 
-    public void loadLocation(String photoId ) {
+    public void loadComments(String photoId ) {
         checkViewAttached();
 
         FlickrService flickrService = FlickrService.Creator.newFlickrService();
-        Observable<PhotoInfoResponse> photosObservable = flickrService.getPhotoInfo(photoId);
+        Observable<CommentsResponse> photoCommentsObservable = flickrService.getPhotoComments(photoId);
 
-        photosObservable.subscribeOn(Schedulers.newThread())
+        photoCommentsObservable.subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Subscriber<PhotoInfoResponse>() {
+                .subscribe(new Subscriber<CommentsResponse>() {
                     @Override
                     public void onCompleted() {
 
@@ -46,9 +46,9 @@ public class PhotoInfoPresenter extends BasePresenter<PhotoInfoMvpView> {
                     }
 
                     @Override
-                    public void onNext(PhotoInfoResponse photosResponse) {
+                    public void onNext(CommentsResponse commentsResponse) {
                         try {
-                            getMvpView().showPhotoLocation(photosResponse.getPhotoInfo().getLocation());
+                            getMvpView().showPhotoComments(commentsResponse.getComments());
                         } catch (Exception exc) {
                             getMvpView().showError();
                         }

@@ -8,6 +8,4 @@ public interface MainMvpView extends MvpView {
 
     void showPhotosEmpty();
 
-    void showError();
-
 }

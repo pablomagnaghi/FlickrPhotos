@@ -11,17 +11,31 @@ import java.util.List;
  * Created by Pablo on 12/2/2017.
  */
 public class Photos implements Parcelable {
-
     @SerializedName("page")
     private Integer page;
     @SerializedName("pages")
     private Integer pages;
     @SerializedName("perpage")
-    private Integer perpage;
+    private Integer perPage;
     @SerializedName("total")
     private Integer total;
     @SerializedName("photo")
     private List<Photo> photos = null;
+
+    public final static Parcelable.Creator<Photos> CREATOR = new Creator<Photos>() {
+        public Photos createFromParcel(Parcel in) {
+            Photos instance = new Photos();
+            instance.page = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            instance.pages = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            instance.perPage = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            instance.total = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            in.readList(instance.photos, (Photo.class.getClassLoader()));
+            return instance;
+        }
+        public Photos[] newArray(int size) {
+            return (new Photos[size]);
+        }
+    };
 
     public Integer getPage() {
         return page;
@@ -39,12 +53,12 @@ public class Photos implements Parcelable {
         this.pages = pages;
     }
 
-    public Integer getPerpage() {
-        return perpage;
+    public Integer getPerPage() {
+        return perPage;
     }
 
-    public void setPerpage(Integer perpage) {
-        this.perpage = perpage;
+    public void setPerPage(Integer perPage) {
+        this.perPage = perPage;
     }
 
     public Integer getTotal() {
@@ -63,47 +77,19 @@ public class Photos implements Parcelable {
         this.photos = photos;
     }
 
-
-    public Photos(Parcel parcel) {
-        super();
-        page = parcel.readInt();
-        pages = parcel.readInt();
-        perpage = parcel.readInt();
-        total = parcel.readInt();
-        photos =  parcel.readArrayList(null);
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(page);
+        dest.writeValue(pages);
+        dest.writeValue(perPage);
+        dest.writeValue(total);
+        dest.writeList(photos);
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int flags) {
-        parcel.writeValue(page);
-        parcel.writeValue(pages);
-        parcel.writeValue(perpage);
-        parcel.writeValue(total);
-        parcel.writeList(photos);
-    }
-
-    @Override
     public int describeContents() {
         return 0;
     }
 
-    // Method to recreate a Question from a Parcel
-    public static Creator<Photos> CREATOR = new Creator<Photos>() {
-
-        @Override
-        public Photos createFromParcel(Parcel source) {
-            return new Photos(source);
-        }
-
-        @Override
-        public Photos[] newArray(int size) {
-            return new Photos[size];
-        }
-
-    };
-
 }
-
 
 
 

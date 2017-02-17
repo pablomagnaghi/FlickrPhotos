@@ -14,12 +14,25 @@ public class PhotosResponse implements Parcelable {
     @SerializedName("stat")
     private String stat;
 
+    public final static Parcelable.Creator<PhotosResponse> CREATOR = new Creator<PhotosResponse>() {
+        public PhotosResponse createFromParcel(Parcel in) {
+            PhotosResponse instance = new PhotosResponse();
+            instance.photosList = ((Photos) in.readValue((Photos.class.getClassLoader())));
+            instance.stat = ((String) in.readValue((String.class.getClassLoader())));
+            return instance;
+        }
+
+        public PhotosResponse[] newArray(int size) {
+            return (new PhotosResponse[size]);
+        }
+    };
+
     public Photos getPhotosList() {
         return photosList;
     }
 
-    public void setPhotosList(Photos photos) {
-        this.photosList = photos;
+    public void setPhotosList(Photos photosList) {
+        this.photosList = photosList;
     }
 
     public String getStat() {
@@ -30,35 +43,13 @@ public class PhotosResponse implements Parcelable {
         this.stat = stat;
     }
 
-    public PhotosResponse(Parcel parcel) {
-        super();
-        photosList = ((Photos) parcel.readValue((Photos.class.getClassLoader())));
-        stat = parcel.readString();
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(photosList);
+        dest.writeValue(stat);
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int flags) {
-        parcel.writeValue(photosList);
-        parcel.writeValue(stat);
-    }
-
-    @Override
     public int describeContents() {
         return 0;
     }
 
-    // Method to recreate a Question from a Parcel
-    public static Creator<PhotosResponse> CREATOR = new Creator<PhotosResponse>() {
-
-        @Override
-        public PhotosResponse createFromParcel(Parcel source) {
-            return new PhotosResponse(source);
-        }
-
-        @Override
-        public PhotosResponse[] newArray(int size) {
-            return new PhotosResponse[size];
-        }
-
-    };
 }

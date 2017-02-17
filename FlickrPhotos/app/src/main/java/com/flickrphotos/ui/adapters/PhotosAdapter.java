@@ -7,13 +7,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import com.flickrphotos.R;
 import com.flickrphotos.model.Photo;
-import com.flickrphotos.ui.listener.RecyclerOnItemClickListener;
 import com.flickrphotos.ui.activities.PhotoInfoActivity;
+import com.flickrphotos.ui.listener.RecyclerOnItemClickListener;
 import com.flickrphotos.utils.Constants;
 
 import java.util.ArrayList;
@@ -21,21 +22,25 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 
 /**
  * Created by Pablo on 12/2/2017.
  */
 
-public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.PhotoViewHolder> implements RecyclerOnItemClickListener {
+public class PhotosAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> implements RecyclerOnItemClickListener {
 
     private List<Photo> mPhotos;
 
     private Context mContext;
 
+    private int mMode;
+
     public PhotosAdapter(Context context){
         mContext = context;
         mPhotos = new ArrayList<>();
+        mMode = Constants.GRID_MODE;
     }
 
     public void setPhotos(List<Photo> photos) {
@@ -52,25 +57,79 @@ public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.PhotoViewH
         notifyItemRangeInserted(previousSize, photos.size());
     }
 
-    @Override
-    public PhotoViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View itemView = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_photo, parent, false);
-        return new PhotoViewHolder(itemView, this);
+    public void setMode(int mode) {
+        mMode = mode;
     }
 
     @Override
-    public void onBindViewHolder(final PhotoViewHolder holder, int position) {
+    public int getItemViewType(int position) {
+        return mMode;
+    }
+
+    @Override
+    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+
+        switch (viewType) {
+            case Constants.LIST_MODE:
+                View itemListView = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_list_photo, parent, false);
+                return new PhotoListViewHolder(itemListView, this);
+            default:
+                View itemGridView = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.item_grid_photo, parent, false);
+                return new PhotoGridViewHolder(itemGridView, this);
+        }
+    }
+
+    @Override
+    public void onBindViewHolder(final RecyclerView.ViewHolder holder, int position) {
         final Photo photo = mPhotos.get(position);
 
-        Glide.with(mContext)
-                .load(photo.getUrlImageSource())
-                .placeholder(R.mipmap.ic_launcher)
-                .error(R.mipmap.ic_launcher)
-                .centerCrop()
-                .crossFade()
-                .diskCacheStrategy(DiskCacheStrategy.SOURCE)
-                .into(holder.photoImageView);
+        switch (holder.getItemViewType()) {
+            case Constants.LIST_MODE:
+                PhotoListViewHolder photoListViewHolder = (PhotoListViewHolder)holder;
+                Glide.with(mContext)
+                        .load(photo.getUrlImageSource())
+                        .placeholder(R.drawable.default_photo)
+                        .error(R.drawable.default_photo)
+                        .fitCenter()
+                        .crossFade()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(photoListViewHolder.photoImageView);
+
+                Glide.with(mContext)
+                        .load(photo.getUrlUserImageSource())
+                        .placeholder(R.drawable.default_user_photo)
+                        .error(R.drawable.default_user_photo)
+                        .centerCrop()
+                        .crossFade()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(photoListViewHolder .userPhotoImageView);
+
+                photoListViewHolder.userNameTextView.setText(photo.getOwnerName());
+                photoListViewHolder.titleTextView.setText(photo.getTitle());
+                photoListViewHolder.dateTextView.setText(photo.getFormatDate());
+                break;
+            default:
+            case Constants.GRID_MODE:
+                PhotoGridViewHolder photoGridViewHolder= (PhotoGridViewHolder)holder;
+                Glide.with(mContext)
+                        .load(photo.getUrlImageSource())
+                        .placeholder(R.drawable.default_photo)
+                        .error(R.drawable.default_photo)
+                        .centerCrop()
+                        .crossFade()
+                        .diskCacheStrategy(DiskCacheStrategy.SOURCE)
+                        .into(photoGridViewHolder.photoImageView);
+                break;
+        }
+    }
+
+    public void setGridMode() {
+
+    }
+
+    public void setListMode() {
+
     }
 
     @Override
@@ -87,12 +146,39 @@ public class PhotosAdapter extends RecyclerView.Adapter<PhotosAdapter.PhotoViewH
         mContext.startActivity(intent);
     }
 
-    class PhotoViewHolder extends RecyclerView.ViewHolder {
+    class PhotoGridViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.iv_photo)
         ImageView photoImageView;
 
-        public PhotoViewHolder(View itemView, final RecyclerOnItemClickListener recyclerOnItemClickListener) {
+        public PhotoGridViewHolder(View itemView, final RecyclerOnItemClickListener recyclerOnItemClickListener) {
+            super(itemView);
+            ButterKnife.bind(this, itemView);
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (recyclerOnItemClickListener != null) {
+                        recyclerOnItemClickListener.onItemClicked(v, getAdapterPosition());
+                    }
+                }
+            });
+        }
+    }
+
+    class PhotoListViewHolder extends RecyclerView.ViewHolder {
+
+        @BindView(R.id.iv_photo)
+        ImageView photoImageView;
+        @BindView(R.id.iv_user_photo)
+        CircleImageView userPhotoImageView;
+        @BindView(R.id.tv_user_name)
+        TextView userNameTextView;
+        @BindView(R.id.tv_title)
+        TextView titleTextView;
+        @BindView(R.id.tv_date)
+        TextView dateTextView;
+
+        public PhotoListViewHolder(View itemView, final RecyclerOnItemClickListener recyclerOnItemClickListener) {
             super(itemView);
             ButterKnife.bind(this, itemView);
             itemView.setOnClickListener(new View.OnClickListener() {

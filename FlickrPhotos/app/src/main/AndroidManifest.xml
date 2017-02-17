@@ -12,6 +12,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".ui.activities.MainActivity"
+            android:label="@string/app_name"
             android:launchMode="singleTop">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,9 +22,19 @@
         </activity>
         <activity
             android:name=".ui.activities.PhotoInfoActivity"
-            android:label="@string/title_activity_photo_info"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:parentActivityName=".ui.activities.MainActivity"></activity>
+            android:label="@string/app_name"
+            android:parentActivityName=".ui.activities.MainActivity"
+            android:launchMode="singleTop">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".ui.activities.PhotoCommentsActivity"
+            android:parentActivityName=".ui.activities.PhotoInfoActivity">
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>

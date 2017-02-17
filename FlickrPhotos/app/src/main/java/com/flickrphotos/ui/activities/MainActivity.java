@@ -1,10 +1,16 @@
 package com.flickrphotos.ui.activities;
 
 import android.os.Bundle;
+import android.support.v4.view.MenuItemCompat;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SearchView;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.flickrphotos.R;
@@ -16,6 +22,7 @@ import com.flickrphotos.utils.Constants;
 import com.flickrphotos.utils.DialogFactory;
 import com.flickrphotos.view.MainMvpView;
 import com.paginate.Paginate;
+import com.paginate.recycler.LoadingListItemCreator;
 import com.paginate.recycler.LoadingListItemSpanLookup;
 
 import java.util.Collections;
@@ -39,8 +46,12 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     private Paginate paginate;
     private Photos mPhotos;
     private int currentPage = 1;
-
+    private boolean searchMode = false;
+    private String mQuery;
     private Menu mMenu;
+
+    @BindView(R.id.swipe_refresh)
+    SwipeRefreshLayout mSwipeRefresh;
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
@@ -55,11 +66,20 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
         mPhotosAdapter = new PhotosAdapter(this);
         mRecyclerView.setAdapter(mPhotosAdapter);
 
-        mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+        mRecyclerView.setLayoutManager(new GridLayoutManager(this, Constants.GRID_SPAN_COUNT));
         mRecyclerView.setItemAnimator(new SlideInUpAnimator());
 
         mMainPresenter = new MainPresenter();
         mMainPresenter.attachView(this);
+
+        mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                currentPage = 1;
+                searchMode = false;
+                mMainPresenter.loadRecentPhotos(currentPage);
+            }
+        });
 
         if (savedInstanceState != null) {
             mPhotos = savedInstanceState.getParcelable(Constants.PHOTO_LIST);
@@ -73,7 +93,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
             }
         }
         else {
-            mMainPresenter.loadPhotos(currentPage);
+            mMainPresenter.loadRecentPhotos(currentPage);
         }
 
         if (paginate != null) {
@@ -83,6 +103,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
         paginate = Paginate.with(mRecyclerView, this)
                 .setLoadingTriggerThreshold(Constants.THRESHOLD)
                 .addLoadingListItem(true)
+                .setLoadingListItemCreator(new CustomLoadingListItemCreator())
                 .setLoadingListItemSpanSizeLookup(new LoadingListItemSpanLookup() {
                     @Override
                     public int getSpanSize() {
@@ -110,6 +131,41 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     public boolean onCreateOptionsMenu(Menu menu) {
         mMenu = menu;
         getMenuInflater().inflate(R.menu.menu_main, menu);
+
+        final MenuItem searchItem = menu.findItem(R.id.i_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+        searchView.setMaxWidth(Integer.MAX_VALUE);
+        searchView.setQueryHint(getText(R.string.search_text));
+        searchView.setSubmitButtonEnabled(false);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                if (!query.isEmpty()) {
+                    mSwipeRefresh.setRefreshing(true);
+                    currentPage = 1;
+                    searchMode = true;
+                    mQuery = query;
+                    mMainPresenter.searchPhotosByText(currentPage, query);
+                }
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                searchMode = false;
+                return true;
+            }
+        });
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                currentPage = 1;
+                searchMode = true;
+                mMainPresenter.loadRecentPhotos(currentPage);
+                return false;
+            }
+        });
+
         return true;
     }
 
@@ -125,7 +181,9 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
                 MenuItem listMenuItem = mMenu.findItem(R.id.i_list);
                 listMenuItem.setVisible(true);
                 item.setVisible(false);
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this, 1));
+                mRecyclerView.setLayoutManager(new GridLayoutManager(this, Constants.LIST_SPAN_COUNT));
+                mPhotosAdapter.setMode(Constants.LIST_MODE);
+                mPhotosAdapter.notifyDataSetChanged();
             }
             return true;
         }
@@ -135,7 +193,9 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
                 MenuItem gridMenuItem = mMenu.findItem(R.id.i_grid);
                 gridMenuItem.setVisible(true);
                 item.setVisible(false);
-                mRecyclerView.setLayoutManager(new GridLayoutManager(this, 3));
+                mRecyclerView.setLayoutManager(new GridLayoutManager(this, Constants.GRID_SPAN_COUNT));
+                mPhotosAdapter.setMode(Constants.GRID_MODE);
+                mPhotosAdapter.notifyDataSetChanged();
             }
             return true;
         }
@@ -147,6 +207,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
 
     @Override
     public void showPhotos(Photos photos) {
+        mSwipeRefresh.setRefreshing(false);
         mPhotos = photos;
         mPhotosAdapter.addPhotos(photos.getPhotos());
         mPhotosAdapter.notifyDataSetChanged();
@@ -155,6 +216,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
 
     @Override
     public void showPhotosEmpty() {
+        mSwipeRefresh.setRefreshing(false);
         mPhotosAdapter.setPhotos(Collections.<Photo>emptyList());
         mPhotosAdapter.notifyDataSetChanged();
         Toast.makeText(this, R.string.empty_photos, Toast.LENGTH_LONG).show();
@@ -163,6 +225,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
 
     @Override
     public void showError() {
+        mSwipeRefresh.setRefreshing(false);
         DialogFactory.createGenericErrorDialog(this, getString(R.string.error_loading_photos))
                 .show();
     }
@@ -172,9 +235,14 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     public void onLoadMore() {
         loading = true;
         if (mPhotos != null) {
-            if (currentPage * mPhotos.getPerpage() < mPhotos.getTotal()) {
+            if (currentPage * mPhotos.getPerPage() < mPhotos.getTotal()) {
                 currentPage++;
-                mMainPresenter.loadPhotos(currentPage);
+                if (searchMode) {
+                    mMainPresenter.searchPhotosByText(currentPage, mQuery);
+                }
+                else {
+                    mMainPresenter.loadRecentPhotos(currentPage);
+                }
             }
         }
     }
@@ -187,9 +255,29 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     @Override
     public boolean hasLoadedAllItems() {
         if (mPhotos != null) {
-            return currentPage * mPhotos.getPerpage() >= mPhotos.getTotal();
+            return currentPage * mPhotos.getPerPage() >= mPhotos.getTotal();
         }
         return false;
+    }
+
+    private class CustomLoadingListItemCreator implements LoadingListItemCreator {
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
+            View view = inflater.inflate(R.layout.custom_loading_list_item, parent, false);
+            return new VH(view);
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            VH vh = (VH) holder;
+        }
+    }
+
+    static class VH extends RecyclerView.ViewHolder {
+        public VH(View itemView) {
+            super(itemView);
+        }
     }
 
 }

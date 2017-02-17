@@ -6,6 +6,12 @@ import android.os.Parcelable;
 import com.flickrphotos.utils.Constants;
 import com.google.gson.annotations.SerializedName;
 
+import java.text.DateFormatSymbols;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+
 /**
  * Created by Pablo on 12/2/2017.
  */
@@ -22,12 +28,38 @@ public class Photo implements Parcelable {
     private Integer farm;
     @SerializedName("title")
     private String title;
-    @SerializedName("ispublic")
-    private Integer ispublic;
-    @SerializedName("isfriend")
-    private Integer isfriend;
-    @SerializedName("isfamily")
-    private Integer isfamily;
+    @SerializedName("description")
+    private Description description;
+    @SerializedName("datetaken")
+    private String dateTaken;
+    @SerializedName("ownername")
+    private String ownerName;
+    @SerializedName("iconserver")
+    private String iconServer;
+    @SerializedName("iconfarm")
+    private Integer iconFarm;
+
+    public final static Parcelable.Creator<Photo> CREATOR = new Creator<Photo>() {
+        public Photo createFromParcel(Parcel in) {
+            Photo instance = new Photo();
+            instance.id = ((String) in.readValue((String.class.getClassLoader())));
+            instance.owner = ((String) in.readValue((String.class.getClassLoader())));
+            instance.secret = ((String) in.readValue((String.class.getClassLoader())));
+            instance.server = ((String) in.readValue((String.class.getClassLoader())));
+            instance.farm = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            instance.title = ((String) in.readValue((String.class.getClassLoader())));
+            instance.description = ((Description) in.readValue((Description.class.getClassLoader())));
+            instance.dateTaken = ((String) in.readValue((String.class.getClassLoader())));
+            instance.ownerName = ((String) in.readValue((String.class.getClassLoader())));
+            instance.iconServer = ((String) in.readValue((String.class.getClassLoader())));
+            instance.iconFarm = ((Integer) in.readValue((Integer.class.getClassLoader())));
+            return instance;
+        }
+
+        public Photo[] newArray(int size) {
+            return (new Photo[size]);
+        }
+    };
 
     public String getId() {
         return id;
@@ -77,77 +109,84 @@ public class Photo implements Parcelable {
         this.title = title;
     }
 
-    public Integer getIspublic() {
-        return ispublic;
+    public Description getDescription() {
+        return description;
     }
 
-    public void setIspublic(Integer ispublic) {
-        this.ispublic = ispublic;
+    public void setDescription(Description description) {
+        this.description = description;
     }
 
-    public Integer getIsfriend() {
-        return isfriend;
+    public String getDateTaken() {
+        return dateTaken;
     }
 
-    public void setIsfriend(Integer isfriend) {
-        this.isfriend = isfriend;
+    public void setDateTaken(String dateTaken) {
+        this.dateTaken = dateTaken;
     }
 
-    public Integer getIsfamily() {
-        return isfamily;
+    public String getOwnerName() {
+        return ownerName;
     }
 
-    public void setIsfamily(Integer isfamily) {
-        this.isfamily = isfamily;
+    public void setOwnerName(String ownerName) {
+        this.ownerName = ownerName;
     }
 
-    public String getUrlImageSource() {
-        return String.format(Constants.URL_PHOTO_SOURCE_FORMAT, getFarm(), getServer(), getId(), getSecret());
+    public String getIconServer() {
+        return iconServer;
     }
 
-    public Photo(Parcel parcel) {
-        super();
-        id = parcel.readString();
-        owner = parcel.readString();
-        secret = parcel.readString();
-        server = parcel.readString();
-        farm = parcel.readInt();
-        title = parcel.readString();
-        ispublic = parcel.readInt();
-        isfriend = parcel.readInt();
-        isfamily = parcel.readInt();
+    public void setIconserver(String iconServer) {
+        this.iconServer = iconServer;
     }
 
-    @Override
-    public void writeToParcel(Parcel parcel, int flags) {
-        parcel.writeValue(id);
-        parcel.writeValue(owner);
-        parcel.writeValue(secret);
-        parcel.writeValue(server);
-        parcel.writeValue(farm);
-        parcel.writeValue(title);
-        parcel.writeValue(ispublic);
-        parcel.writeValue(isfriend);
-        parcel.writeValue(isfamily);
+    public Integer getIconFarm() {
+        return iconFarm;
     }
 
-    @Override
+    public void setIconfarm(Integer iconFarm) {
+        this.iconFarm = iconFarm;
+    }
+
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeValue(id);
+        dest.writeValue(owner);
+        dest.writeValue(secret);
+        dest.writeValue(server);
+        dest.writeValue(farm);
+        dest.writeValue(title);
+        dest.writeValue(description);
+        dest.writeValue(dateTaken);
+        dest.writeValue(ownerName);
+        dest.writeValue(iconServer);
+        dest.writeValue(iconFarm);
+    }
+
     public int describeContents() {
         return 0;
     }
 
-    // Method to recreate a Question from a Parcel
-    public static Creator<Photo> CREATOR = new Creator<Photo>() {
+    public String getUrlImageSource() {
+        return String.format(Constants.URL_PHOTO_SOURCE_FORMAT, farm, server, id, secret);
+    }
 
-        @Override
-        public Photo createFromParcel(Parcel source) {
-            return new Photo(source);
+    public String getUrlUserImageSource() {
+        return String.format(Constants.URL_USER_PHOTO_SOURCE_FORMAT, iconFarm, iconServer, owner);
+    }
+
+    public String getFormatDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        try {
+            Date date = sdf.parse(dateTaken);
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(date);
+            int month = cal.get(Calendar.MONTH);
+            int day = cal.get(Calendar.DAY_OF_MONTH);
+            String monthString = new DateFormatSymbols().getMonths()[month];
+            return monthString.substring(0,3) + " " + String.valueOf(day);
+        } catch (ParseException ex) {
+            return "";
         }
-
-        @Override
-        public Photo[] newArray(int size) {
-            return new Photo[size];
-        }
-
-    };
+    }
 }
