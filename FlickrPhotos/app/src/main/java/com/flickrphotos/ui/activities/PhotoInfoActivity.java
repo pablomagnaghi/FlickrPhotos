@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
+import android.text.method.LinkMovementMethod;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
@@ -136,15 +137,14 @@ public class PhotoInfoActivity extends BaseActivity implements PhotoInfoMvpView 
                 .diskCacheStrategy(DiskCacheStrategy.SOURCE)
                 .into(userPhotoImageView);
 
-
-
-
         userNameTextView.setText(mPhoto.getOwnerName());
         titleTextView.setText(mPhoto.getTitle());
         dateTextView.setText(mPhoto.getFormatDate());
+        descriptionTextView.setClickable(true);
+        descriptionTextView.setMovementMethod(LinkMovementMethod.getInstance());
         descriptionTextView.setText(Html.fromHtml(mPhoto.getDescription().getContent()));
-    }
 
+    }
 
     /** MVP View methods implementation **/
 
