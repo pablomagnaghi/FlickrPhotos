@@ -1,7 +1,7 @@
 package com.flickrphotos.presenter;
 
 import com.flickrphotos.model.CommentsResponse;
-import com.flickrphotos.restServices.FlickrService;
+import com.flickrphotos.restServices.FlickrAdapter;
 import com.flickrphotos.view.PhotoCommentsMvpView;
 
 import rx.Observable;
@@ -27,8 +27,7 @@ public class PhotoCommentsPresenter extends BasePresenter<PhotoCommentsMvpView> 
     public void loadComments(String photoId ) {
         checkViewAttached();
 
-        FlickrService flickrService = FlickrService.Creator.newFlickrService();
-        Observable<CommentsResponse> photoCommentsObservable = flickrService.getPhotoComments(photoId);
+        Observable<CommentsResponse> photoCommentsObservable = FlickrAdapter.newFlickrService().getPhotoComments(photoId);
 
         photoCommentsObservable.subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())

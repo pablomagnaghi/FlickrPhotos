@@ -1,7 +1,7 @@
 package com.flickrphotos.presenter;
 
 import com.flickrphotos.model.PhotosResponse;
-import com.flickrphotos.restServices.FlickrService;
+import com.flickrphotos.restServices.FlickrAdapter;
 import com.flickrphotos.utils.Constants;
 import com.flickrphotos.view.MainMvpView;
 
@@ -28,8 +28,7 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
     public void loadRecentPhotos(int currentPage) {
         checkViewAttached();
 
-        FlickrService flickrService = FlickrService.Creator.newFlickrService();
-        Observable<PhotosResponse> photosObservable = flickrService.getRecentPhotos(Constants.PER_PAGE,
+        Observable<PhotosResponse> photosObservable = FlickrAdapter.newFlickrService().getRecentPhotos(Constants.PER_PAGE,
                 currentPage);
 
         photosObservable.subscribeOn(Schedulers.newThread())
@@ -67,8 +66,7 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
     public void searchPhotosByText(int currentPage, String text) {
         checkViewAttached();
 
-        FlickrService flickrService = FlickrService.Creator.newFlickrService();
-        Observable<PhotosResponse> photosObservable = flickrService.getPhotosByText(Constants.PER_PAGE,
+        Observable<PhotosResponse> photosObservable = FlickrAdapter.newFlickrService().getPhotosByText(Constants.PER_PAGE,
                 currentPage, text);
 
         photosObservable.subscribeOn(Schedulers.newThread())

@@ -23,7 +23,7 @@
             android:layout_gravity="center"
             android:layout_marginTop="2dp"
             android:layout_marginBottom="2dp"
-            android:scaleType="fitXY"/>
+            android:scaleType="centerCrop"/>
 
         <RelativeLayout
             android:layout_width="match_parent"

@@ -11,13 +11,13 @@
         android:id="@+id/i_grid"
         android:orderInCategory="100"
         android:title=""
-        android:icon="@drawable/ic_apps_white_24dp"
+        android:icon="@drawable/ic_format_list_bulleted_white_24dp"
         app:showAsAction="always" />
     <item
         android:id="@+id/i_list"
         android:orderInCategory="100"
         android:title=""
-        android:icon="@drawable/ic_format_list_bulleted_white_24dp"
+        android:icon="@drawable/ic_apps_white_24dp"
         android:visible="false"
         app:showAsAction="always" />
 </menu>

@@ -35,10 +35,6 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
  */
 public class MainActivity extends BaseActivity implements MainMvpView, Paginate.Callbacks {
 
-    //@Inject
-    //MainPresenter mMainPresenter;
-    //@Inject RibotsAdapter mRibotsAdapter;
-
     MainPresenter mMainPresenter;
     PhotosAdapter mPhotosAdapter;
 
@@ -59,7 +55,6 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        activityComponent().inject(this);
         setContentView(R.layout.activity_main);
         injectView();
 
@@ -209,7 +204,12 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     public void showPhotos(Photos photos) {
         mSwipeRefresh.setRefreshing(false);
         mPhotos = photos;
-        mPhotosAdapter.addPhotos(photos.getPhotos());
+        if (currentPage == 1) {
+            mPhotosAdapter.setPhotos(photos.getPhotos());
+        }
+        else {
+            mPhotosAdapter.addPhotos(photos.getPhotos());
+        }
         mPhotosAdapter.notifyDataSetChanged();
         loading = false;
     }

@@ -1,7 +1,7 @@
 package com.flickrphotos.presenter;
 
 import com.flickrphotos.model.PhotoInfoResponse;
-import com.flickrphotos.restServices.FlickrService;
+import com.flickrphotos.restServices.FlickrAdapter;
 import com.flickrphotos.view.PhotoInfoMvpView;
 
 import rx.Observable;
@@ -27,8 +27,7 @@ public class PhotoInfoPresenter extends BasePresenter<PhotoInfoMvpView> {
     public void loadLocation(String photoId ) {
         checkViewAttached();
 
-        FlickrService flickrService = FlickrService.Creator.newFlickrService();
-        Observable<PhotoInfoResponse> photosObservable = flickrService.getPhotoInfo(photoId);
+        Observable<PhotoInfoResponse> photosObservable = FlickrAdapter.newFlickrService().getPhotoInfo(photoId);
 
         photosObservable.subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())
