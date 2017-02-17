@@ -64,8 +64,7 @@
                                 android:layout_weight="1"
                                 android:textStyle="bold"
                                 android:textSize="@dimen/text_title"
-                                android:singleLine="false"
-                                android:text="wqeqw eqwe qw eqwe qwe qwe qwe qwew eqwe qw e"/>
+                                android:singleLine="false" />
                             <TextView
                                 android:id="@+id/tv_date"
                                 android:layout_width="60dp"
