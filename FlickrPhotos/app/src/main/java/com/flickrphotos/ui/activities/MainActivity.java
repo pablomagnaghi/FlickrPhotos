@@ -136,7 +136,6 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!query.isEmpty()) {
-                    mSwipeRefresh.setRefreshing(true);
                     currentPage = 1;
                     searchMode = true;
                     mQuery = query;
