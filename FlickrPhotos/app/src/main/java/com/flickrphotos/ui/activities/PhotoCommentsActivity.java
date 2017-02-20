@@ -16,10 +16,14 @@ import com.flickrphotos.utils.Constants;
 import com.flickrphotos.utils.DialogFactory;
 import com.flickrphotos.view.PhotoCommentsMvpView;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
+import butterknife.ButterKnife;
 
 public class PhotoCommentsActivity extends BaseActivity implements PhotoCommentsMvpView {
 
+    @Inject
     PhotoCommentsPresenter mPhotoCommentsPresenter;
 
     Photo mPhoto;
@@ -38,14 +42,13 @@ public class PhotoCommentsActivity extends BaseActivity implements PhotoComments
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_comments);
-
-        injectView();
+        ButterKnife.bind(this);
+        getApplicationComponent().inject(this);
 
         overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
 
         getSupportActionBar().setHomeAsUpIndicator(R.drawable.ic_close_white_24dp);
 
-        mPhotoCommentsPresenter = new PhotoCommentsPresenter();
         mPhotoCommentsPresenter.attachView(this);
 
         mPhoto = (Photo) getIntent().getParcelableExtra(Constants.PHOTO_INTENT);

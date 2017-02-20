@@ -140,10 +140,13 @@ public class PhotosAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     @Override
     public void onItemClicked(View view, int position) {
 
-        Photo photo = mPhotos.get(position);
-        Intent intent = new Intent(mContext, PhotoInfoActivity.class);
-        intent.putExtra(Constants.PHOTO_INTENT, photo);
-        mContext.startActivity(intent);
+        if (mPhotos.size() > position) {
+            Photo photo = mPhotos.get(position);
+            Intent intent = new Intent(mContext, PhotoInfoActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.putExtra(Constants.PHOTO_INTENT, photo);
+            mContext.startActivity(intent);
+        }
     }
 
     class PhotoGridViewHolder extends RecyclerView.ViewHolder {

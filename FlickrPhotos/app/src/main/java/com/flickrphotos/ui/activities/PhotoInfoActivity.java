@@ -1,6 +1,7 @@
 package com.flickrphotos.ui.activities;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.text.Html;
@@ -20,7 +21,10 @@ import com.flickrphotos.utils.Constants;
 import com.flickrphotos.utils.DialogFactory;
 import com.flickrphotos.view.PhotoInfoMvpView;
 
+import javax.inject.Inject;
+
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import de.hdodenhof.circleimageview.CircleImageView;
 
 /**
@@ -28,6 +32,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
  */
 public class PhotoInfoActivity extends BaseActivity implements PhotoInfoMvpView {
 
+    @Inject
     PhotoInfoPresenter mPhotoInfoPresenter;
     Photo mPhoto;
     Location mLocation;
@@ -51,13 +56,13 @@ public class PhotoInfoActivity extends BaseActivity implements PhotoInfoMvpView 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_photo_info);
-        injectView();
+        ButterKnife.bind(this);
+        getApplicationComponent().inject(this);
 
         overridePendingTransition(R.anim.enter_from_right, R.anim.exit_to_left);
 
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-        mPhotoInfoPresenter = new PhotoInfoPresenter();
         mPhotoInfoPresenter.attachView(this);
 
         mPhoto = (Photo) getIntent().getParcelableExtra(Constants.PHOTO_INTENT);
@@ -140,9 +145,10 @@ public class PhotoInfoActivity extends BaseActivity implements PhotoInfoMvpView 
         userNameTextView.setText(mPhoto.getOwnerName());
         titleTextView.setText(mPhoto.getTitle());
         dateTextView.setText(mPhoto.getFormatDate());
-        descriptionTextView.setClickable(true);
         descriptionTextView.setMovementMethod(LinkMovementMethod.getInstance());
         descriptionTextView.setText(Html.fromHtml(mPhoto.getDescription().getContent()));
+        descriptionTextView.setLinksClickable(true);
+        descriptionTextView.setLinkTextColor(Color.BLUE);
 
     }
 

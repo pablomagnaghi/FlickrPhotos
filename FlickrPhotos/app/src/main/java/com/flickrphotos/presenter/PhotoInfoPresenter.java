@@ -1,8 +1,10 @@
 package com.flickrphotos.presenter;
 
 import com.flickrphotos.model.PhotoInfoResponse;
-import com.flickrphotos.restServices.FlickrAdapter;
+import com.flickrphotos.restServices.FlickrService;
 import com.flickrphotos.view.PhotoInfoMvpView;
+
+import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -13,6 +15,13 @@ import rx.schedulers.Schedulers;
  * Created by Pablo on 12/2/2017.
  */
 public class PhotoInfoPresenter extends BasePresenter<PhotoInfoMvpView> {
+
+    FlickrService mFlickService;
+
+    @Inject
+    public PhotoInfoPresenter(FlickrService flickrService) {
+        mFlickService = flickrService;
+    }
 
     @Override
     public void attachView(PhotoInfoMvpView mvpView) {
@@ -27,7 +36,7 @@ public class PhotoInfoPresenter extends BasePresenter<PhotoInfoMvpView> {
     public void loadLocation(String photoId ) {
         checkViewAttached();
 
-        Observable<PhotoInfoResponse> photosObservable = FlickrAdapter.newFlickrService().getPhotoInfo(photoId);
+        Observable<PhotoInfoResponse> photosObservable = mFlickService.getPhotoInfo(photoId);
 
         photosObservable.subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())

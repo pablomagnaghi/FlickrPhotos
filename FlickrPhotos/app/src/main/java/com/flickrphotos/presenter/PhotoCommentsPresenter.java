@@ -1,8 +1,10 @@
 package com.flickrphotos.presenter;
 
 import com.flickrphotos.model.CommentsResponse;
-import com.flickrphotos.restServices.FlickrAdapter;
+import com.flickrphotos.restServices.FlickrService;
 import com.flickrphotos.view.PhotoCommentsMvpView;
+
+import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -13,6 +15,13 @@ import rx.schedulers.Schedulers;
  * Created by Pablo on 16/2/2017.
  */
 public class PhotoCommentsPresenter extends BasePresenter<PhotoCommentsMvpView> {
+
+    FlickrService mFlickService;
+
+    @Inject
+    public PhotoCommentsPresenter(FlickrService flickrService) {
+        mFlickService = flickrService;
+    }
 
     @Override
     public void attachView(PhotoCommentsMvpView mvpView) {
@@ -27,7 +36,7 @@ public class PhotoCommentsPresenter extends BasePresenter<PhotoCommentsMvpView> 
     public void loadComments(String photoId ) {
         checkViewAttached();
 
-        Observable<CommentsResponse> photoCommentsObservable = FlickrAdapter.newFlickrService().getPhotoComments(photoId);
+        Observable<CommentsResponse> photoCommentsObservable = mFlickService.getPhotoComments(photoId);
 
         photoCommentsObservable.subscribeOn(Schedulers.newThread())
                 .observeOn(AndroidSchedulers.mainThread())

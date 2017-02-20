@@ -1,9 +1,11 @@
 package com.flickrphotos.presenter;
 
 import com.flickrphotos.model.PhotosResponse;
-import com.flickrphotos.restServices.FlickrAdapter;
+import com.flickrphotos.restServices.FlickrService;
 import com.flickrphotos.utils.Constants;
 import com.flickrphotos.view.MainMvpView;
+
+import javax.inject.Inject;
 
 import rx.Observable;
 import rx.Subscriber;
@@ -14,6 +16,13 @@ import rx.schedulers.Schedulers;
  * Created by Pablo on 12/2/2017.
  */
 public class MainPresenter extends BasePresenter<MainMvpView> {
+
+    FlickrService mFlickService;
+
+    @Inject
+    public MainPresenter(FlickrService flickrService) {
+        mFlickService = flickrService;
+    }
 
     @Override
     public void attachView(MainMvpView mvpView) {
@@ -28,7 +37,7 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
     public void loadRecentPhotos(int currentPage) {
         checkViewAttached();
 
-        Observable<PhotosResponse> photosObservable = FlickrAdapter.newFlickrService().getRecentPhotos(Constants.PER_PAGE,
+        Observable<PhotosResponse> photosObservable = mFlickService.getRecentPhotos(Constants.PER_PAGE,
                 currentPage);
 
         photosObservable.subscribeOn(Schedulers.newThread())
@@ -66,7 +75,7 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
     public void searchPhotosByText(int currentPage, String text) {
         checkViewAttached();
 
-        Observable<PhotosResponse> photosObservable = FlickrAdapter.newFlickrService().getPhotosByText(Constants.PER_PAGE,
+        Observable<PhotosResponse> photosObservable = mFlickService.getPhotosByText(Constants.PER_PAGE,
                 currentPage, text);
 
         photosObservable.subscribeOn(Schedulers.newThread())

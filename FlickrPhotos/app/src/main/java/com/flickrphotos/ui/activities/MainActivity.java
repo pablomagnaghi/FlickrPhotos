@@ -14,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.flickrphotos.R;
-import com.flickrphotos.model.Photo;
 import com.flickrphotos.model.Photos;
 import com.flickrphotos.presenter.MainPresenter;
 import com.flickrphotos.ui.adapters.PhotosAdapter;
@@ -25,9 +24,10 @@ import com.paginate.Paginate;
 import com.paginate.recycler.LoadingListItemCreator;
 import com.paginate.recycler.LoadingListItemSpanLookup;
 
-import java.util.Collections;
+import javax.inject.Inject;
 
 import butterknife.BindView;
+import butterknife.ButterKnife;
 import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
 
 /**
@@ -35,7 +35,9 @@ import jp.wasabeef.recyclerview.animators.SlideInUpAnimator;
  */
 public class MainActivity extends BaseActivity implements MainMvpView, Paginate.Callbacks {
 
+    @Inject
     MainPresenter mMainPresenter;
+    @Inject
     PhotosAdapter mPhotosAdapter;
 
     private boolean loading = false;
@@ -56,21 +58,20 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        injectView();
+        ButterKnife.bind(this);
+        getApplicationComponent().inject(this);
 
-        mPhotosAdapter = new PhotosAdapter(this);
         mRecyclerView.setAdapter(mPhotosAdapter);
-
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, Constants.GRID_SPAN_COUNT));
         mRecyclerView.setItemAnimator(new SlideInUpAnimator());
 
-        mMainPresenter = new MainPresenter();
         mMainPresenter.attachView(this);
 
         mSwipeRefresh.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
                 currentPage = 1;
+                mPhotosAdapter.getPhotos().clear();
                 searchMode = false;
                 mMainPresenter.loadRecentPhotos(currentPage);
             }
@@ -136,6 +137,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
             @Override
             public boolean onQueryTextSubmit(String query) {
                 if (!query.isEmpty()) {
+                    mPhotosAdapter.getPhotos().clear();
                     currentPage = 1;
                     searchMode = true;
                     mQuery = query;
@@ -197,18 +199,14 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
         return super.onOptionsItemSelected(item);
     }
 
+
     /** MVP View methods implementation **/
 
     @Override
     public void showPhotos(Photos photos) {
         mSwipeRefresh.setRefreshing(false);
         mPhotos = photos;
-        if (currentPage == 1) {
-            mPhotosAdapter.setPhotos(photos.getPhotos());
-        }
-        else {
-            mPhotosAdapter.addPhotos(photos.getPhotos());
-        }
+        mPhotosAdapter.addPhotos(photos.getPhotos());
         mPhotosAdapter.notifyDataSetChanged();
         loading = false;
     }
@@ -216,7 +214,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
     @Override
     public void showPhotosEmpty() {
         mSwipeRefresh.setRefreshing(false);
-        mPhotosAdapter.setPhotos(Collections.<Photo>emptyList());
+        mPhotosAdapter.getPhotos().clear();
         mPhotosAdapter.notifyDataSetChanged();
         Toast.makeText(this, R.string.empty_photos, Toast.LENGTH_LONG).show();
         loading = false;
