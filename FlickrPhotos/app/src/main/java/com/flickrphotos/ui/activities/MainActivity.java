@@ -62,6 +62,7 @@ public class MainActivity extends BaseActivity implements MainMvpView, Paginate.
         getApplicationComponent().inject(this);
 
         mRecyclerView.setAdapter(mPhotosAdapter);
+        mPhotosAdapter.setMode(Constants.GRID_MODE);
         mRecyclerView.setLayoutManager(new GridLayoutManager(this, Constants.GRID_SPAN_COUNT));
         mRecyclerView.setItemAnimator(new SlideInUpAnimator());
 
